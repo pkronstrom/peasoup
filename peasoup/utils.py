@@ -1,8 +1,9 @@
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from podgen import Podcast, Episode, Media
 import mutagen
+import pytz
 
 from . import config
 
@@ -14,15 +15,18 @@ def get_episodes(dir):
 
     def get_file_info(fname):
         path = os.path.join(config.PODCASTS_DIRECTORY, fname)
+        stat = os.stat(path)
         return {
             'duration': timedelta(seconds = mutagen.File(path).info.length),
-            'size': os.stat(path).st_size
+            'size': stat.st_size,
+            'created': datetime.fromtimestamp(stat.st_ctime, pytz.UTC)
         }
 
     def episode_from_filename(filename):
         info = get_file_info(filename)
         return Episode(
             title = filename,
+            publication_date = info.get('created', datetime.now()),
             media = Media(
                 os.path.join(config.SERVER_BASEURL, 'episodes', filename),
                 info.get('size'),
