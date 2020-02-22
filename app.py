@@ -15,11 +15,15 @@ def get_podcast_xml():
         mimetype="application/xml")
 
 
-@app.route('/episodes/<episode>')
-def get_podcast_episode(episode):
+@app.route('/episodes/<slug>')
+def get_podcast_episode(slug):
+    filename = utils.from_slug(slug)
     return send_from_directory(
-        config.PODCASTS_DIRECTORY, episode)
+        config.PODCASTS_DIRECTORY, filename)
 
 
 if __name__ == '__main__':
+    # slugify the dir in case the server has been started
+    # and we use a cache xml
+    utils.slugify_podcasts_dir()
     app.run(host="0.0.0.0", port=9999)
